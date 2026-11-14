@@ -2,9 +2,10 @@ import time, json
 from sqlalchemy import select, func
 from src.config.database import Session
 from migrations.initial import migrate
-from src.models import User, Dataset, Job, Report, Delivery, Audit
+from src.models import User, Dataset, DatasetGrant, Job, Report, Delivery, Audit
 from src.services.business import metadata, seed_records, analyze
 from src.services.reports import deliver
+from src.services.access import grant
 from src.utils.security import hash_password
 from src.utils.serialization import checksum
 def seed():
@@ -21,6 +22,10 @@ def seed():
             rows=seed_records()
             d=Dataset(name=m['dataset_name'],source=m['short']+'-202611.csv',records=rows,checksum=checksum(rows),created_at=time.time())
             db.add(d); db.flush()
+        for role in ('analyst','viewer'): # 演示批次默认私有，预授权给演示账号；不覆盖负责人后续调整
+            account=db.scalar(select(User).where(User.email==role+'@demo.local'))
+            if account and not db.scalar(select(DatasetGrant).where(DatasetGrant.dataset_id==d.id,DatasetGrant.user_id==account.id)):
+                grant(db,d,account,'seed')
         if not db.scalar(select(Job).where(Job.name=='基线复核 · '+m['name'])):
             params={p['key']:p['default'] for p in m.get('parameters',[])}
             result=analyze(d.records,params)

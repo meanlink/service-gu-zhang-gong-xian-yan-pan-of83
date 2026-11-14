@@ -8,3 +8,7 @@ class JobStatus(str, Enum):
     running = 'running'
     completed = 'completed'
     failed = 'failed'
+    cancelled = 'cancelled'
+class DatasetVisibility(str, Enum):
+    private = 'private'
+    shared = 'shared'

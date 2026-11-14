@@ -4,7 +4,7 @@ from sqlalchemy import select
 from src.config.database import get_db
 from src.models import User
 from src.utils.security import verify_password, token_for
-from src.middlewares.auth import current_user
+from src.middlewares.auth import current_user, admin_only
 from src.services.audit import record
 router=APIRouter(prefix='/auth')
 class Login(BaseModel):
@@ -18,3 +18,6 @@ def login(data:Login, db=Depends(get_db)):
     return {'access_token':token_for(u),'user':{'name':u.name,'role':u.role,'email':u.email}}
 @router.get('/me')
 def me(u=Depends(current_user)):return {'name':u.name,'role':u.role,'email':u.email}
+@router.get('/users')
+def users(db=Depends(get_db),u=Depends(admin_only)):
+    return [{'id':x.id,'email':x.email,'name':x.name,'role':x.role} for x in db.scalars(select(User).order_by(User.id))]

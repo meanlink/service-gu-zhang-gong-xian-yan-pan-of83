@@ -10,6 +10,7 @@ class Job(Base):
     status: Mapped[str] = mapped_column(String(20), default='queued')
     result: Mapped[dict] = mapped_column(JSON, default=dict)
     error: Mapped[str] = mapped_column(String(1000), default='')
+    cancel_reason: Mapped[str] = mapped_column(String(500), default='')
     approved: Mapped[bool] = mapped_column(Boolean, default=False)
     created_by: Mapped[int] = mapped_column(ForeignKey('users.id'))
     created_at: Mapped[float] = mapped_column(Double)

@@ -18,9 +18,12 @@ docker compose exec -T backend python -m scripts.seed_demo
 ## 演示账号与权限
 |账号|密码|真实权限|
 |---|---|---|
-|admin@demo.local|Demo123!|接入、执行、批准、分发、暂停、读取与下载|
+|admin@demo.local|Demo123!|接入、执行、批准、分发、暂停、批次授权、读取与下载|
 |analyst@demo.local|Demo123!|接入、执行、读取与下载；不能批准或安排分发|
 |viewer@demo.local|Demo123!|只读与下载|
+
+## 批次授权与权限隔离
+复盘包含未公开事故，数据批次不再默认全员可读。负责人（admin）在「批次授权」页按批次授权指定账号；分析任务与归档交付继承所属批次的隔离：未获授权时列表不显示、详情与下载返回 403。新批次默认私有（创建者自动获得授权）；既有批次迁移为「共享 · 待确认」，负责人在授权页确认私有或共享后立即生效。撤销授权会立即取消该账号在此批次上排队/计算中的任务（状态为已取消并记录原因），与计算完成并发时结果不再写入；服务重启或再次授权后已取消任务不复活，已有归档在每次读取与下载时按当前授权重新检查。角色权限（admin/analyst/viewer）继续约束导入、执行、批准与分发等操作。
 
 ## 技术与本地开发
 Python 3.12 / FastAPI / SQLAlchemy / NumPy / SciPy / scikit-learn；PostgreSQL 16；Redis 7；Nginx；原生 HTML CSS JavaScript ES modules（用户指定）。后端所有校验、持久化和算法在服务端。无前端打包步骤。
